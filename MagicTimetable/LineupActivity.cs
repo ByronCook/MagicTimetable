@@ -14,32 +14,27 @@ namespace MagicTimetable
         {
             base.OnCreate(savedInstanceState);
             var txtHandler = new PersonalTxtHandler();
-            var lineUp = new DocsReader().CreateLineupIdList().OrderBy(e => e.Stage);
-            var stages = lineUp.Select(t => t.Stage).Distinct();
+            var artists = new DocsReader().CreateLineupIdList().OrderBy(e => e.Stage);
+            var stages = artists.Select(t => t.Stage).Distinct();
 
-            var scrollview = new ScrollView(this);
-            scrollview.SetBackgroundColor(Color.DarkGray);
-
-            var initialLayout = new LinearLayout(this) { Orientation = Orientation.Vertical };
-            initialLayout.SetPadding(10, 10, 10, 10);
-            initialLayout.SetBackgroundColor(Color.DarkGray);
+            var layoutCreator = new LayoutCreation();
+            var scrollView = layoutCreator.CreateBaiscScrollView(this);
+            var linearLayout = layoutCreator.CreateBasicLinearLayout(this);
 
             var checkBoxlist = new List<CheckBox>();
 
             foreach (var stage in stages)
             {
-                var stageButton = new Button(this) { Text = stage, TextSize = 24 };
-                stageButton.SetBackgroundColor(Color.SteelBlue);
-                stageButton.SetTextColor(Color.White);
-                stageButton.SetShadowLayer(1, 1, 1, Color.Black);
-                initialLayout.AddView(stageButton);
-
-                foreach (var artist in lineUp.Where(e => e.Stage == stage))
+                linearLayout.AddView(layoutCreator.CreateSimpleButton(this, Color.White, Color.SteelBlue, stage, null, true));
+                
+                foreach (var artist in artists.Where(e => e.Stage == stage))
                 {
-                    var artistButton = new CheckBox(this);
-                    artistButton.TextSize = 23;
-                    artistButton.Text = artist.Name;
-                    
+                    var artistButton = new CheckBox(this)
+                    {
+                        TextSize = 23,
+                        Text = artist.Name
+                    };
+
                     var savedList = txtHandler.ReadTxtFile();
                     if (savedList.Contains(artistButton.Text))
                     {
@@ -47,14 +42,11 @@ namespace MagicTimetable
                     }
 
                     checkBoxlist.Add(artistButton);
-                    initialLayout.AddView(artistButton);
+                    linearLayout.AddView(artistButton);
                 }
             }
 
-            var saveButton = new Button(this) { Text = "Save", TextSize = 30 };
-            saveButton.SetBackgroundColor(Color.SteelBlue);
-            saveButton.SetTextColor(Color.White);
-            saveButton.SetShadowLayer(4, 4, 4, Color.Black);
+            var saveButton = layoutCreator.CreateSimpleButton(this, Color.White, Color.SteelBlue, "Save", null, true);
 
             saveButton.Click += delegate
             {
@@ -79,10 +71,10 @@ namespace MagicTimetable
                 .Show(); 
             };
 
-            initialLayout.AddView(saveButton);
-            scrollview.AddView(initialLayout);
+            linearLayout.AddView(saveButton);
+            scrollView.AddView(linearLayout);
 
-            SetContentView(scrollview);
+            SetContentView(scrollView);
         }
     }
 }

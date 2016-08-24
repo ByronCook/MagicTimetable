@@ -29,22 +29,14 @@ namespace MagicTimetable
                 }
             }
 
-            var scrollview = new ScrollView(this);
-            scrollview.SetBackgroundColor(Color.DarkGray);
-
-            var stageOrderLayout = new LinearLayout(this) { Orientation = Orientation.Vertical };
-            stageOrderLayout.SetPadding(10, 10, 10, 10);
-            stageOrderLayout.SetBackgroundColor(Color.DarkGray);
+            var layoutCreator = new LayoutCreation();
+            var scrollView = layoutCreator.CreateBaiscScrollView(this);
+            var linearLayout = layoutCreator.CreateBasicLinearLayout(this);
 
 
             foreach (var stage in stages)
             {
-                var stageButton = new Button(this) { Text = stage, TextSize = 24 };
-                stageButton.SetBackgroundColor(Color.SteelBlue);
-                stageButton.SetTextColor(Color.White);
-                stageButton.SetShadowLayer(1, 1, 1, Color.Black);
-                stageOrderLayout.AddView(stageButton);
-
+                linearLayout.AddView(layoutCreator.CreateSimpleButton(this, Color.White, Color.SteelBlue, stage, null, true));
 
                 foreach (var artist in artistsList.Where(a => a.Stage == stage))
                 {
@@ -66,14 +58,13 @@ namespace MagicTimetable
                     var breakLine = new TextView(this) {Text = "-------------------------------"};
                     breakLine.SetTextColor(Color.Black);
 
-                    stageOrderLayout.AddView(artistText);
-                    stageOrderLayout.AddView(artistTime);
-                    stageOrderLayout.AddView(breakLine);
+                    linearLayout.AddView(artistText);
+                    linearLayout.AddView(artistTime);
+                    linearLayout.AddView(breakLine);
                 }
             }
-            scrollview.AddView(stageOrderLayout);
-
-            SetContentView(scrollview);
+            scrollView.AddView(linearLayout);
+            SetContentView(scrollView);
         }
     }
 }

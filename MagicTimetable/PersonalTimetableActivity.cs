@@ -4,8 +4,6 @@ using System.Linq;
 using Android.App;
 using Android.Graphics;
 using Android.OS;
-using Android.Views;
-using Android.Widget;
 
 namespace MagicTimetable
 {
@@ -16,13 +14,10 @@ namespace MagicTimetable
         {
             base.OnCreate(savedInstanceState);
 
-            var scrollview = new ScrollView(this);
-            scrollview.SetBackgroundColor(Color.DarkGray);
-
-            var personalTableLayout = new LinearLayout(this) { Orientation = Orientation.Vertical };
-            personalTableLayout.SetPadding(10, 10, 10, 10);
-            personalTableLayout.SetBackgroundColor(Color.DarkGray);
-
+            var layoutCreator = new LayoutCreation();
+            var scrollView = layoutCreator.CreateBaiscScrollView(this);
+            var linearLayout = layoutCreator.CreateBasicLinearLayout(this);
+            
             var artistsList = new DocsReader().CreateIdList().Where(d => d.EventName == Intent.GetStringExtra("EventName")).Where(y => y.Day == Convert.ToInt32(Intent.GetStringExtra("Day"))).OrderBy(a => a.SetStartTime.Hour).ToList();
             var txtHandler = new PersonalTxtHandler();
             var selectedArtistList = txtHandler.ReadTxtFile();
@@ -35,9 +30,9 @@ namespace MagicTimetable
                 {
                     var list = artistsList.Where(t => t.Name == artist);
 
-                    foreach (var listt in list)
+                    foreach (var item in list)
                     {
-                        actualList.Add(listt);
+                        actualList.Add(item);
                     }
                 }
 
@@ -61,57 +56,25 @@ namespace MagicTimetable
                     {
                         if (artistlist2.ElementAt(artistId).Stage != artistlist2.ElementAt(artistId - 1).Stage)
                         {
-                            CreateStageButton(artistlist2, artistId, personalTableLayout);
+                            linearLayout.AddView(layoutCreator.CreateSimpleButton(this, Color.White, Color.SteelBlue, artistlist2.ElementAt(artistId).Stage, null, true));
                         }
                     }
+                    //Only creates first artists as it needs a first to be able to compare stages above ^
                     else
                     {
-                        CreateStageButton(artistlist2, artistId, personalTableLayout);
+                        linearLayout.AddView(layoutCreator.CreateSimpleButton(this, Color.White, Color.SteelBlue, artistlist2.ElementAt(artistId).Stage, null, true));
                     }
-                    var artistButton = new Button(this)
-                    {
-                        Text = artistlist2.ElementAt(artistId).Name + ": " +
-                               artistlist2.ElementAt(artistId).SetStartTime.ToShortTimeString() + " - " +
-                               artistlist2.ElementAt(artistId).SetEndTime.ToShortTimeString(),
-                        TextSize = 19,
-                        Clickable = false
-                    };
-                    artistButton.SetTextColor(Color.White);
-                    artistButton.SetBackgroundColor(Color.DarkGray);
-                    artistButton.SetShadowLayer(1, 1, 1, Color.Black);
+                    var artistsDetails = artistlist2.ElementAt(artistId).Name + ": " +
+                                         artistlist2.ElementAt(artistId).SetStartTime.ToShortTimeString() + " - " +
+                                         artistlist2.ElementAt(artistId).SetEndTime.ToShortTimeString();
 
-                    personalTableLayout.AddView(artistButton);
+                    linearLayout.AddView(layoutCreator.CreateSimpleButton(this, Color.White, Color.DarkGray, artistsDetails, 19, false));
                 }
 
-                scrollview.AddView(personalTableLayout);
-            }
-            else
-            {
-                var errorLayout = new LinearLayout(this) { Orientation = Orientation.Vertical };
-                errorLayout.SetPadding(10, 10, 10, 10);
-                errorLayout.SetBackgroundColor(Color.DarkGray);
-
-                var errorText = new TextView(this)
-                {
-                    Text = "There are no events planned.",
-                    TextSize = 24
-                };
-                errorText.SetTextColor(Color.Red);
-                errorLayout.AddView(errorText);
-                scrollview.AddView(errorLayout);
+                scrollView.AddView(linearLayout);
             }
 
-            
-
-            SetContentView(scrollview);
-        }
-
-        private void CreateStageButton(IEnumerable<Artist> artistList, int artistId, ViewGroup currentLayout)
-        {
-            var stageButton = new Button(this) { Text = artistList.ElementAt(artistId).Stage, TextSize = 23 };
-            stageButton.SetBackgroundColor(Color.SteelBlue);
-            stageButton.SetTextColor(Color.White);
-            currentLayout.AddView(stageButton);
+            SetContentView(scrollView);
         }
     }
 }

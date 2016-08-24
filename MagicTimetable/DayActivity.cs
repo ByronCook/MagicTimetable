@@ -14,39 +14,18 @@ namespace MagicTimetable
         {
             base.OnCreate(savedInstanceState);
 
-            var days = new DocsReader().CreateIdList().Where(d => d.EventName == Intent.GetStringExtra("EventName")).Select(t => t.Day).Distinct().OrderBy(e => e);
+            var uniqueDays = new DocsReader().CreateIdList().Where(d => d.EventName == Intent.GetStringExtra("EventName")).Select(t => t.Day).Distinct().OrderBy(e => e);
 
-            var scrollview = new ScrollView(this);
-            scrollview.SetBackgroundColor(Color.DarkGray);
-
-            var initialLayout = new LinearLayout(this) { Orientation = Orientation.Vertical };
-            initialLayout.SetPadding(10, 10, 10, 10);
-            initialLayout.SetBackgroundColor(Color.DarkGray);
-
-            var dayButton = new Button(this) { Text = "Select a day:", TextSize = 24 };
-            dayButton.SetBackgroundColor(Color.SteelBlue);
-            dayButton.SetTextColor(Color.White);
-            dayButton.SetShadowLayer(2, 2, 2, Color.Black);
-            initialLayout.AddView(dayButton);
-
-            var lineupButton = new Button(this) { Text = "Full Line-up:", TextSize = 24 };
-            lineupButton.SetBackgroundResource(Resource.Drawable.buttonblank);
-            lineupButton.SetTextColor(Color.Red);
-            lineupButton.SetShadowLayer(4, 4, 4, Color.Black);
-
-            foreach (var day in days)
+            var layoutCreator = new LayoutCreation();
+            var scrollView = layoutCreator.CreateBaiscScrollView(this);
+            var linearLayout = layoutCreator.CreateBasicLinearLayout(this);
+            linearLayout.AddView(layoutCreator.CreateResourceButton(this, Color.White, "Select a day:"));
+            var lineupButton = layoutCreator.CreateResourceButton(this, Color.Red, "Full Line-up:");
+            
+            foreach (var day in uniqueDays)
             {
-                var stageButton = new Button(this) { Text = "Day: " + day, TextSize = 24 };
-                stageButton.SetBackgroundResource(Resource.Drawable.buttonblank);
-                stageButton.SetTextColor(Color.Cyan);
-                stageButton.SetShadowLayer(2, 2, 2, Color.Black);
-
-                var emptyButton = new Button(this);
-                emptyButton.SetBackgroundColor(Color.Transparent);
-                emptyButton.TextSize = 24;
-
-                initialLayout.AddView(emptyButton);
-                initialLayout.AddView(stageButton);
+                var stageButton = layoutCreator.CreateResourceButton(this, Color.Cyan, "Day: " + day);
+                linearLayout.AddView(stageButton);
 
                 stageButton.Click += delegate
                 {
@@ -63,12 +42,10 @@ namespace MagicTimetable
                 lineupActivity.PutExtra("EventName", Intent.GetStringExtra("EventName"));
                 StartActivity(lineupActivity);
             };
-
-
-            initialLayout.AddView(lineupButton);
-            scrollview.AddView(initialLayout);
-
-            SetContentView(scrollview);
+            
+            linearLayout.AddView(lineupButton);
+            scrollView.AddView(linearLayout);
+            SetContentView(scrollView);
         }
     }
 }

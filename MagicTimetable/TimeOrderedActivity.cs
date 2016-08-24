@@ -16,12 +16,9 @@ namespace MagicTimetable
         {
             base.OnCreate(savedInstanceState);
 
-            var scrollview = new ScrollView(this);
-            scrollview.SetBackgroundColor(Color.DarkGray);
-
-            var timeOrderLayout = new LinearLayout(this) { Orientation = Orientation.Vertical };
-            timeOrderLayout.SetPadding(10, 10, 10, 10);
-            timeOrderLayout.SetBackgroundColor(Color.DarkGray);
+            var layoutCreator = new LayoutCreation();
+            var scrollView = layoutCreator.CreateBaiscScrollView(this);
+            var linearLayout = layoutCreator.CreateBasicLinearLayout(this);
 
             var artistsList = new DocsReader().CreateIdList().Where(d => d.EventName == Intent.GetStringExtra("EventName")).Where(y => y.Day == Convert.ToInt32(Intent.GetStringExtra("Day"))).OrderBy(a => a.SetStartTime.Hour).ToList();
 
@@ -43,38 +40,24 @@ namespace MagicTimetable
                 {
                     if (artistsList.ElementAt(artistId).Stage != artistsList.ElementAt(artistId - 1).Stage)
                     {
-                        CreateStageButton(artistsList, artistId, timeOrderLayout);
+                        linearLayout.AddView(layoutCreator.CreateSimpleButton(this, Color.White, Color.SteelBlue, artistsList.ElementAt(artistId).Stage, null, true));
                     }
                 }
                 else
                 {
-                    CreateStageButton(artistsList, artistId, timeOrderLayout);
+                    linearLayout.AddView(layoutCreator.CreateSimpleButton(this, Color.White, Color.SteelBlue, artistsList.ElementAt(artistId).Stage, null, true));
                 }
-                var artistButton = new Button(this)
-                {
-                    Text = artistsList.ElementAt(artistId).Name + ": " +
-                           artistsList.ElementAt(artistId).SetStartTime.ToShortTimeString() + " - " +
-                           artistsList.ElementAt(artistId).SetEndTime.ToShortTimeString(),
-                    TextSize = 21,
-                    Clickable = false
-                };
-                artistButton.SetTextColor(Color.White);
-                artistButton.SetBackgroundColor(Color.DarkGray);
-                artistButton.SetShadowLayer(1, 1, 1, Color.Black);
 
-                timeOrderLayout.AddView(artistButton);
+                var artistDetails = artistsList.ElementAt(artistId).Name + ": " +
+                                    artistsList.ElementAt(artistId).SetStartTime.ToShortTimeString() + " - " +
+                                    artistsList.ElementAt(artistId).SetEndTime.ToShortTimeString();
+
+                linearLayout.AddView(layoutCreator.CreateSimpleButton(this, Color.White, Color.SteelBlue, artistDetails, 21, false));
             }
 
-            scrollview.AddView(timeOrderLayout);
+            scrollView.AddView(linearLayout);
 
-            SetContentView(scrollview);
-        }
-        private void CreateStageButton(IEnumerable<Artist> artistList, int artistId, ViewGroup currentLayout)
-        {
-            var stageButton = new Button(this) { Text = artistList.ElementAt(artistId).Stage, TextSize = 24 };
-            stageButton.SetBackgroundColor(Color.SteelBlue);
-            stageButton.SetTextColor(Color.White);
-            currentLayout.AddView(stageButton);
+            SetContentView(scrollView);
         }
     }
 }
